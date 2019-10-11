@@ -1,0 +1,36 @@
+#include "interface.h"	// __TRAIN_SENDCOMMAND, __TRAIN_DATA, __TRAIN_UDATA, __TRAIN_IDATA
+
+__TRAIN_SENDCOMMAND(Train_SendCommand, Train_MaxAddress, Train_MaxCommand, 0xC800 /*11001000 00000000*/)
+
+#define __TRAIN_TRAIN_DATA(NAME, COMMAND) __TRAIN_DATA(Train_SendCommand, Train_MaxAddress)
+#define __TRAIN_TRAIN_UDATA(NAME, COMMAND, MAX) __TRAIN_UDATA(Train_SendCommand, Train_MaxAddress)
+#define __TRAIN_TRAIN_IDATA(NAME, COMMAND, MIN, MAX) __TRAIN_IDATA(Train_SendCommand, Train_MaxAddress)
+
+__TRAIN_TRAIN_DATA(Train_ForwardDirection, 0 /*0000000*/)
+__TRAIN_TRAIN_DATA(Train_ToggleDirection, 1 /*0000001*/)
+__TRAIN_TRAIN_DATA(Train_ReverseDirection, 3 /*0000011*/)
+__TRAIN_TRAIN_DATA(Train_Boost, 4 /*0000100*/)
+__TRAIN_TRAIN_DATA(Train_Brake, 7 /*0000111*/)
+__TRAIN_TRAIN_DATA(Train_OpenFrontCoupler, 5 /*0000101*/)
+__TRAIN_TRAIN_DATA(Train_OpenRearCoupler, 6 /*0000110*/)
+__TRAIN_TRAIN_DATA(Train_BlowHorn1, 28 /*0011100*/)
+__TRAIN_TRAIN_DATA(Train_RingBell, 29 /*0011101*/)
+__TRAIN_TRAIN_DATA(Train_LetoffSound, 30 /*0011110*/)
+__TRAIN_TRAIN_DATA(Train_BlowHorn2, 31 /*0011111*/)
+__TRAIN_TRAIN_DATA(Train_AUX1Off, 8 /*0001000*/)
+__TRAIN_TRAIN_DATA(Train_AUX1Option1, 9 /*0001001*/)
+__TRAIN_TRAIN_DATA(Train_AUX1Option2, 10 /*0001010*/)
+__TRAIN_TRAIN_DATA(Train_AUX1On, 11 /*0001011*/)
+__TRAIN_TRAIN_DATA(Train_AUX2Off, 12 /*0001100*/)
+__TRAIN_TRAIN_DATA(Train_AUX2Option1, 13 /*0001101*/)
+__TRAIN_TRAIN_DATA(Train_AUX2Option2, 14 /*0001110*/)
+__TRAIN_TRAIN_DATA(Train_AUX2On, 15 /*0001111*/)
+
+__TRAIN_TRAIN_DATA(Train_SetMomentumLow, 40 /*0101000*/)
+__TRAIN_TRAIN_DATA(Train_SetMomentumMedium, 41 /*0101001*/)
+__TRAIN_TRAIN_DATA(Train_SetMomentumHigh, 42 /*0101010*/)
+__TRAIN_TRAIN_DATA(Train_SetAddress, 43 /*0101011*/)
+__TRAIN_TRAIN_DATA(Train_ClearLashUp, 44 /*0101100*/)
+
+__TRAIN_TRAIN_UDATA(Train_SetSpeed, 96 /*1100000*/, Train_AbsoluteMaxSpeed)
+__TRAIN_TRAIN_IDATA(Train_ChangeSpeed, 64 /*1000000*/, Train_RelativeMinSpeed, Train_RelativeMaxSpeed)
