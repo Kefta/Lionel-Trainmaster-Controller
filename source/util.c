@@ -62,31 +62,34 @@ inline void PrintBinary(FILE* pStream, const BYTE* Object, size_t uLength)
 	}
 }
 
-inline BOOL InputEnter(FILE* pStream)
+enum InputState InputEnter(FILE* pStream)
 {
 	int iEnter;
 
 	while ((iEnter = getc(pStream)) != '\r' && iEnter != '\n')
 	{
 		if (iEnter == EOF)
-			return FALSE;
+			return INPUT_EOF;
 	}
 	
-	return TRUE;
+	return INPUT_SUCCESS;
 }
 
 // FIXME: Change error stream arg to an error callback func
-BOOL InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput)
+enum InputState InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput)
 {
+	int iCurChar = getc(pInput);
+	
+	if (iCurChar == EOF)
+		return INPUT_EOF;
+	
 	static const char* InputError = "\nInvalid input, enter a number [%zu, %zu]: ";
 	
 	uintmax_t uOption = 0;
-	
-	int iCurChar;
 	size_t uCurPower;
 	BOOL bStarted = FALSE;
 	
-	while ((iCurChar = getc(pInput)) != EOF)
+	do
 	{
 		switch(iCurChar)
 		{
@@ -117,7 +120,7 @@ BOOL InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintmax_t uMax, u
 			default:
 				PrintF(pError, InputError, uMin, uMax);
 				
-				return FALSE;
+				return INPUT_FAIL;
 			
 			case '\0':
 			case '\n':
@@ -130,31 +133,35 @@ BOOL InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintmax_t uMax, u
 			goto DEFAULT_INPUTUNSIGNED;
 		}
 	}
+	while ((iCurChar = getc(pInput)) != EOF);
 	
 	if (uOption < uMin)
 	{
 		PrintF(pError, InputError, uMin, uMax);
 		
-		return FALSE;
+		return INPUT_FAIL;
 	}
 	
 	if (ret_uInput != NULL)
 		*ret_uInput = uOption;
 	
-	return TRUE;
+	return INPUT_SUCCESS;
 }
 
-BOOL InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput)
+enum InputState InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput)
 {
+	int iCurChar = getc(pInput);
+	
+	if (iCurChar == EOF)
+		return INPUT_EOF;
+	
 	static const char* InputError = "\nInvalid input, enter a number [%zd, %zd]: ";
 	
 	intmax_t iOption = 0;
-	
-	int iCurChar;
 	size_t uCurPower;
 	BOOL bNegative, bStarted = FALSE, FALSE;
 	
-	while ((iCurChar = getc(pInput)) != EOF)
+	do
 	{
 		switch(iCurChar)
 		{
@@ -204,7 +211,7 @@ BOOL InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t iMax, intm
 			default:
 				PrintF(pError, InputError, iMin, iMax);
 				
-				return FALSE;
+				return INPUT_FAIL;
 			
 			case '\0':
 			case '\n':
@@ -217,6 +224,7 @@ BOOL InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t iMax, intm
 			goto DEFAULT_INPUTSIGNED;
 		}
 	}
+	while ((iCurChar = getc(pInput)) != EOF);
 	
 	if (bNegative)
 	{
@@ -224,26 +232,26 @@ BOOL InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t iMax, intm
 		{
 			PrintF(pError, InputError, iMin, iMax);
 			
-			return FALSE;
+			return INPUT_FAIL;
 		}
 	}
 	else if (iOption < iMin)
 	{
 		PrintF(pError, InputError, iMin, iMax);
 		
-		return FALSE;
+		return INPUT_FAIL;
 	}
 	
 	if (ret_iInput != NULL)
 		*ret_iInput = iOption;
 	
-	return TRUE;
+	return INPUT_SUCCESS;
 }
 
-long double InputDecimal(FILE* pStream, FILE* pError, long double nMin, long double nMax, long double* ret_nInput)
+enum InputState InputDecimal(FILE* pStream, FILE* pError, long double nMin, long double nMax, long double* ret_nInput)
 {
 	// FIXME
-	return 0;
+	return INPUT_FAIL;
 }
 
 inline BOOL CheckUnsigned(uintmax_t uNumber, uintmax_t uMin, uintmax_t uMax)

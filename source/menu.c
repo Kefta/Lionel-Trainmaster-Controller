@@ -7,7 +7,7 @@
 #include "interface.h"	// SystemHandle
 #include "util.h"		// PrintF, PrintN, INPUT_SUCCESS
 
-inline size_t CommandMenu_PrintList(FILE* pStream, const char* sPrefix, const char* CommandMenu_Option tOptions, size_t uLength, const char* sSuffix)
+inline size_t CommandMenu_PrintList(FILE* pStream, const char* sPrefix, const struct CommandMenu_Option* tOptions, size_t uLength, const char* sSuffix)
 {
 	const char* const sText;
 	size_t uOptionCount = 0;
@@ -36,17 +36,17 @@ inline size_t CommandMenu_PrintList(FILE* pStream, const char* sPrefix, const ch
 	return uOptionCount;
 }
 
-InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const CommandMenu_Option* tOptions, size_t uLength, const CommandMenu_Strings tStrings)
+enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const struct CommandMenu_Option* tOptions, size_t uLength, const CommandMenu_Phrases tStrings)
 {
 	size_t uOptions;
-	const CommandMenu_Option* tOption;
+	const struct CommandMenu_Option* tOption;
 
 	uintmax_t uInput;
 	intmax_t iInput;
 	uintmax_t uAddress;
 	
-	CommandMenu_Menu tMenuStack[TRAIN_MAXMENUS];
-	CommandMenu_Menu* pCurMenuPos = tMenuStack;
+	struct CommandMenu_Menu tMenuStack[TRAIN_MAXMENUS];
+	struct CommandMenu_Menu* pCurMenuPos = tMenuStack;
 
 	CommandMenu_ParseInput_PrintMenu:
 		uOptions = CommandMenu_PrintList(pStream, tStrings.Prefix, tOptions, uLength, tStrings.Suffix);

@@ -29,9 +29,9 @@ enum InputState
 	INPUT_EOF
 };
 
-InputState InputUnsigned(FILE* pStream, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput);
-InputState InputSigned(FILE* pStream, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput);
-InputState InputDecimal(FILE* pStream, long double nMin, long double nMax, long double* ret_nInput);
+enum InputState InputUnsigned(FILE* pStream, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput);
+enum InputState InputSigned(FILE* pStream, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput);
+enum InputState InputDecimal(FILE* pStream, long double nMin, long double nMax, long double* ret_nInput);
 
 BOOL CheckUnsigned(uintmax_t uNumber, uintmax_t uMin, uintmax_t uMax);
 BOOL CheckSigned(intmax_t iNumber, intmax_t iMin, intmax_t iMax);

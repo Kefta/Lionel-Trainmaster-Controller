@@ -4,8 +4,11 @@
 
 #include "interface.h"	// IAccessory, SystemHandle, SystemUnsignedData
 
-static const SystemUnsignedData Accessory_MaxAddress = 127;
-static const SystemUnsignedData Accessory_MaxCommand = 127;
+#define TRAIN_ACCESSORY_MAXADDRESS 127
+#define TRAIN_ACCESSORY_MAXCOMMAND 127
+
+static const SystemUnsignedData Accessory_MaxAddress = TRAIN_ACCESSORY_MAXADDRESS;
+static const SystemUnsignedData Accessory_MaxCommand = TRAIN_ACCESSORY_MAXCOMMAND;
 
 void Accessory_SendCommand(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 127]*/, SystemUnsignedData uCommand /*[0, 127]*/);
 
@@ -25,8 +28,8 @@ void Accessory_AssignAUX1ToGroup(SystemHandle hSystem, SystemUnsignedData uAddre
 void Accessory_AssignAUX2ToGroup(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 127]*/, SystemUnsignedData uGroupID /*[0, 15]*/);
 
 static const struct IAccessory Accessory = {
-	.MaxAddress = Accessory_MaxAddress,
-	.MaxCommand = Accessory_MaxCommand,
+	.MaxAddress = TRAIN_ACCESSORY_MAXADDRESS,
+	.MaxCommand = TRAIN_ACCESSORY_MAXCOMMAND,
 	
 	.SendCommand = Accessory_SendCommand,
 	

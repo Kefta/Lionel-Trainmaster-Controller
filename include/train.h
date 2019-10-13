@@ -4,11 +4,17 @@
 
 #include "interface.h"	// ITrain, SystemHandle, SystemSignedData, SystemUnsignedData
 
-static const SystemUnsignedData Train_MaxAddress = 15;
-static const SystemUnsignedData Train_MaxCommand = 127;
-static const SystemUnsignedData Train_AbsoluteMaxSpeed = 31;
-static const SystemSignedData Train_RelativeMinSpeed = -16;
-static const SystemSignedData Train_RelativeMaxSpeed = 15;
+#define TRAIN_TRAIN_MAXADDRESS 15
+#define TRAIN_TRAIN_MAXCOMMAND 127
+#define TRAIN_TRAIN_ABSOLUTEMAXSPEED 31
+#define TRAIN_TRAIN_RELATIVEMINSPEED -16
+#define TRAIN_TRAIN_RELATIVEMAXSPEED 15
+
+static const SystemUnsignedData Train_MaxAddress = TRAIN_TRAIN_MAXADDRESS;
+static const SystemUnsignedData Train_MaxCommand = TRAIN_TRAIN_MAXCOMMAND;
+static const SystemUnsignedData Train_AbsoluteMaxSpeed = TRAIN_TRAIN_ABSOLUTEMAXSPEED;
+static const SystemSignedData Train_RelativeMinSpeed = TRAIN_TRAIN_RELATIVEMINSPEED;
+static const SystemSignedData Train_RelativeMaxSpeed = TRAIN_TRAIN_RELATIVEMAXSPEED;
 
 void Train_SendCommand(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/, SystemUnsignedData uCommand /*[0, 127]*/);
 
@@ -42,11 +48,11 @@ void Train_SetSpeed(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*
 void Train_ChangeSpeed(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/, SystemUnsignedData uRelativeSpeed /*[-16, 15]*/);
 
 static const struct ITrain Train = {
-	.MaxAddress = Train_MaxAddress,
-	.MaxCommand = Train_MaxCommand,
-	.AbsoluteMaxSpeed = Train_AbsoluteMaxSpeed,
-	.RelativeMinSpeed = Train_RelativeMinSpeed,
-	.RelativeMaxSpeed = Train_RelativeMaxSpeed,
+	.MaxAddress = TRAIN_TRAIN_MAXADDRESS,
+	.MaxCommand = TRAIN_TRAIN_MAXCOMMAND,
+	.AbsoluteMaxSpeed = TRAIN_TRAIN_ABSOLUTEMAXSPEED,
+	.RelativeMinSpeed = TRAIN_TRAIN_RELATIVEMINSPEED,
+	.RelativeMaxSpeed = TRAIN_TRAIN_RELATIVEMAXSPEED,
 	
 	.SendCommand = Train_SendCommand,
 

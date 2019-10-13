@@ -1,9 +1,9 @@
 #include "interface.h"	// __TRAIN_SENDCOMMAND, __TRAIN_DATA, __TRAIN_UDATA
 
-__TRAIN_SENDCOMMAND(Accessory_SendCommand, Accessory_MaxAddress, Accessory_MaxCommand, 0x8000 /*10000000 00000000*/)
+__TRAIN_SENDCOMMAND(Accessory_SendCommand, TRAIN_ACCESSORY_MAXADDRESS, TRAIN_ACCESSORY_MAXCOMMAND, 0x8000 /*10000000 00000000*/)
 
-#define __TRAIN_ACCESSORY_DATA(NAME, COMMAND) __TRAIN_DATA(Accessory_SendCommand, Accessory_MaxAddress)
-#define __TRAIN_ACCESSORY_UDATA(NAME, COMMAND, MAX) __TRAIN_UDATA(Accessory_SendCommand, Accessory_MaxAddress)
+#define __TRAIN_ACCESSORY_DATA(NAME, COMMAND) __TRAIN_DATA(Accessory_SendCommand, TRAIN_ACCESSORY_MAXADDRESS)
+#define __TRAIN_ACCESSORY_UDATA(NAME, COMMAND, MAX) __TRAIN_UDATA(Accessory_SendCommand, TRAIN_ACCESSORY_MAXADDRESS)
 
 __TRAIN_ACCESSORY_DATA(Accessory_AUX1Off, 8 /*0001000*/)
 __TRAIN_ACCESSORY_DATA(Accessory_AUX1Option1, 9 /*0001001*/)
@@ -16,5 +16,5 @@ __TRAIN_ACCESSORY_DATA(Accessory_AUX2Off, 15 /*0001111*/)
 __TRAIN_ACCESSORY_DATA(Accessory_AllOff, 32 /*0100000*/)
 __TRAIN_ACCESSORY_DATA(Accessory_AllOn, 47 /*0101111*/)
 __TRAIN_ACCESSORY_DATA(Accessory_SetAddress, 43 /*0101011*/)
-__TRAIN_ACCESSORY_UDATA(Accessory_AssignAUX1ToGroup, 32 /*0100000*/, Group_MaxAddress)
-__TRAIN_ACCESSORY_UDATA(Accessory_AssignAUX2ToGroup, 48 /*0110000*/, Group_MaxAddress) // This was printed as 0100000 but that is the same as Accessory_AssignAUX1ToGroup
+__TRAIN_ACCESSORY_UDATA(Accessory_AssignAUX1ToGroup, 32 /*0100000*/, TRAIN_GROUP_MAXADDRESS)
+__TRAIN_ACCESSORY_UDATA(Accessory_AssignAUX2ToGroup, 48 /*0110000*/, TRAIN_GROUP_MAXADDRESS) // This was printed as 0100000 but that is the same as Accessory_AssignAUX1ToGroup

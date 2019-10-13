@@ -4,11 +4,17 @@
 
 #include "interface.h"	// IEngine, SystemHandle, SystemSignedData, SystemUnsignedData
 
-static const SystemUnsignedData Engine_MaxAddress = 127;
-static const SystemUnsignedData Engine_MaxCommand = 127;
-static const SystemUnsignedData Engine_AbsoluteMaxSpeed = 31;
-static const SystemSignedData Engine_RelativeMinSpeed = -16;
-static const SystemSignedData Engine_RelativeMaxSpeed = 15;
+#define TRAIN_ENGINE_MAXADDRESS 127
+#define TRAIN_ENGINE_MAXCOMMAND 127
+#define TRAIN_ENGINE_ABSOLUTEMAXSPEED 31
+#define TRAIN_ENGINE_RELATIVEMINSPEED -16
+#define TRAIN_ENGINE_RELATIVEMAXSPEED 15
+
+static const SystemUnsignedData Engine_MaxAddress = TRAIN_ENGINE_MAXADDRESS;
+static const SystemUnsignedData Engine_MaxCommand = TRAIN_ENGINE_MAXCOMMAND;
+static const SystemUnsignedData Engine_AbsoluteMaxSpeed = TRAIN_ENGINE_ABSOLUTEMAXSPEED;
+static const SystemSignedData Engine_RelativeMinSpeed = TRAIN_ENGINE_RELATIVEMINSPEED;
+static const SystemSignedData Engine_RelativeMaxSpeed = TRAIN_ENGINE_RELATIVEMAXSPEED;
 
 void Engine_SendCommand(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 127]*/, SystemUnsignedData uCommand /*[0, 127]*/);
 
@@ -50,11 +56,11 @@ void Engine_SetSpeed(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 127
 void Engine_ChangeSpeed(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 127]*/, SystemSignedData uRelativeSpeed /*[-16, 15]*/);
 
 static const struct IEngine Engine = {
-	.MaxAddress = Engine_MaxAddress,
-	.MaxCommand = Engine_MaxCommand,
-	.AbsoluteMaxSpeed = Engine_AbsoluteMaxSpeed,
-	.RelativeMinSpeed = Engine_RelativeMinSpeed,
-	.RelativeMaxSpeed = Engine_RelativeMaxSpeed,
+	.MaxAddress = TRAIN_ENGINE_MAXADDRESS,
+	.MaxCommand = TRAIN_ENGINE_MAXCOMMAND,
+	.AbsoluteMaxSpeed = TRAIN_ENGINE_ABSOLUTEMAXSPEED,
+	.RelativeMinSpeed = TRAIN_ENGINE_RELATIVEMINSPEED,
+	.RelativeMaxSpeed = TRAIN_ENGINE_RELATIVEMAXSPEED,
 	
 	.SendCommand = Engine_SendCommand,
 	

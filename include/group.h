@@ -4,8 +4,11 @@
 
 #include "interface.h"	// IGroup, SystemHandle, SystemUnsignedData
 
-static const SystemUnsignedData Group_MaxAddress = 15;
-static const SystemUnsignedData Group_MaxCommand = 127;
+#define TRAIN_GROUP_MAXADDRESS 15
+#define TRAIN_GROUP_MAXCOMMAND 127
+
+static const SystemUnsignedData Group_MaxAddress = TRAIN_GROUP_MAXADDRESS;
+static const SystemUnsignedData Group_MaxCommand = TRAIN_GROUP_MAXCOMMAND;
 
 void Group_SendCommand(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/, SystemUnsignedData uCommand /*[0, 127]*/);
 
@@ -16,8 +19,8 @@ void Group_On(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/);
 void Group_Clear(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/);
 
 static const struct IGroup Group = {
-	.MaxAddress = Group_MaxAddress,
-	.MaxCommand = Group_MaxCommand,
+	.MaxAddress = TRAIN_GROUP_MAXADDRESS,
+	.MaxCommand = TRAIN_GROUP_MAXCOMMAND,
 	
 	.SendCommand = Group_SendCommand,
 
