@@ -97,7 +97,11 @@ enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError
 						goto CommandMenu_ParseInput_PrintMenu;
 
 						case MENU_SIMPLE:
-							(tOption->Simple.Function)(hSystem, uAddress);
+							(tOption->Simple.Function)(hSystem);
+						goto CommandMenu_ParseInput_PrintMenu;
+						
+						case MENU_ADDRESS:
+							(tOption->Address.Function)(hSystem, uAddress);
 						goto CommandMenu_ParseInput_PrintMenu;
 
 						case MENU_UDATA:

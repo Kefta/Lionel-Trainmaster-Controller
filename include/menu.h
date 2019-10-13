@@ -10,8 +10,9 @@ enum CommandMenu_OptionType
 {
 	MENU_MENU,			// Redirects to another menu, no command
 	MENU_SIMPLE,		// No args
-	MENU_UDATA,			// Unsigned data
-	MENU_IDATA,			// Signed data
+	MENU_ADDRESS,		// Address
+	MENU_UDATA,			// Address + Unsigned data
+	MENU_IDATA,			// Address + Signed data
 	MENU_COMMAND,		// Component command (Address + Command)
 	MENU_SYSCOMMAND,	// System command
 
@@ -28,6 +29,11 @@ struct CommandMenu_Menu
 };
 
 struct CommandMenu_Simple
+{
+	void (*Function)(SystemHandle);
+};
+
+struct CommandMenu_Address
 {
 	void (*Function)(SystemHandle, SystemUnsignedData);
 };
@@ -65,6 +71,7 @@ struct CommandMenu_Option
 	{
 		const struct CommandMenu_Menu Menu;
 		const struct CommandMenu_Simple Simple;
+		const struct CommandMenu_Address Address;
 		const struct CommandMenu_UnsignedData UnsignedData;
 		const struct CommandMenu_SignedData SignedData;
 		const struct CommandMenu_Command Command;
