@@ -2,6 +2,8 @@
 #include <stdio.h>		// EOF, FILE, fprintf, getc, size_t, vfprintf
 #include <windows.h>	// BOOL, BYTE, FALSE, TRUE
 
+#include "util.h"
+
 inline void Print(FILE* pStream, const char* sMessage)
 {
 	fprintf(pStream, "%s", sMessage);
@@ -16,26 +18,14 @@ inline void PrintF(FILE* pStream, const char* sMessage, ...)
 {
 	va_list args;
 	va_start(args, sMessage);
-		vfprintf(pStream, "%s", sMessage, args);
+		// FIXME: This will fail for non-literal strings
+		vfprintf(pStream, sMessage, args);
 	va_end(args);
 }
 
 inline void PrintFV(FILE* pStream, const char* sMessage, va_list args)
 {
-	vfprintf(pStream, "%s", sMessage, args);
-}
-
-inline void PrintFN(FILE* pStream, const char* sMessage, ...)
-{
-	va_list args;
-	va_start(args, sMessage);
-		vfprintf(pStream, "%s\n", sMessage, args);
-	va_end(args);
-}
-
-inline void PrintFVN(FILE* pStream, const char* sMessage, va_list args)
-{
-	vfprintf(pStream, "%s\n", sMessage, args);
+	vfprintf(pStream, sMessage, args);
 }
 
 inline void PrintBinary(FILE* pStream, const BYTE* Object, size_t uLength)
@@ -148,7 +138,7 @@ enum InputState InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintma
 	return INPUT_SUCCESS;
 }
 
-enum InputState InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput)
+enum InputState InputSigned(FILE* pInput, FILE* pError, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput)
 {
 	int iCurChar = getc(pInput);
 	
@@ -159,7 +149,8 @@ enum InputState InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t
 	
 	intmax_t iOption = 0;
 	size_t uCurPower;
-	BOOL bNegative, bStarted = FALSE, FALSE;
+	BOOL bNegative = FALSE;
+	BOOL bStarted = FALSE;
 	
 	do
 	{
@@ -248,7 +239,7 @@ enum InputState InputSigned(FILE* pStream, FILE* pError, intmax_t iMin, intmax_t
 	return INPUT_SUCCESS;
 }
 
-enum InputState InputDecimal(FILE* pStream, FILE* pError, long double nMin, long double nMax, long double* ret_nInput)
+enum InputState InputDecimal(FILE* pInput, FILE* pError, long double nMin, long double nMax, long double* ret_nInput)
 {
 	// FIXME
 	return INPUT_FAIL;
@@ -264,7 +255,7 @@ inline BOOL CheckUnsigned(uintmax_t uNumber, uintmax_t uMin, uintmax_t uMax)
 
 inline BOOL CheckSigned(intmax_t iNumber, intmax_t iMin, intmax_t iMax)
 {
-	if (iNumber >= iMin && iNumber <= uMax)
+	if (iNumber >= iMin && iNumber <= iMax)
 		return TRUE;
 
 	return FALSE;

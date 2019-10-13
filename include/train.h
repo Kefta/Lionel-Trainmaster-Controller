@@ -45,7 +45,7 @@ void Train_SetAddress(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15
 void Train_ClearLashUp(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/);
 
 void Train_SetSpeed(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/, SystemUnsignedData uAbsoluteSpeed /*[0, 31]*/);
-void Train_ChangeSpeed(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/, SystemUnsignedData uRelativeSpeed /*[-16, 15]*/);
+void Train_ChangeSpeed(SystemHandle hSystem, SystemUnsignedData uAddress /*[0, 15]*/, SystemSignedData uRelativeSpeed /*[-16, 15]*/);
 
 static const struct ITrain Train = {
 	.MaxAddress = TRAIN_TRAIN_MAXADDRESS,

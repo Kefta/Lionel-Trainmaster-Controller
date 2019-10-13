@@ -15,12 +15,10 @@ void Print(FILE* pStream, const char* sMessage);
 void PrintN(FILE* pStream, const char* sMessage);
 void PrintF(FILE* pStream, const char* sMessage, ...);
 void PrintFV(FILE* pStream, const char* sMessage, va_list args);
-void PrintFN(FILE* pStream, const char* sMessage, ...);
-void PrintFVN(FILE* pStream, const char* sMessage, va_list args);
+//void PrintFN(FILE* pStream, const char* sMessage, ...);
+//void PrintFVN(FILE* pStream, const char* sMessage, va_list args);
 
 void PrintBinary(FILE* pStream, const BYTE* Object, size_t uLength);
-
-BOOL InputEnter(FILE* pStream);
 
 enum InputState
 {
@@ -29,9 +27,10 @@ enum InputState
 	INPUT_EOF
 };
 
-enum InputState InputUnsigned(FILE* pStream, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput);
-enum InputState InputSigned(FILE* pStream, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput);
-enum InputState InputDecimal(FILE* pStream, long double nMin, long double nMax, long double* ret_nInput);
+enum InputState InputEnter(FILE* pStream);
+enum InputState InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput);
+enum InputState InputSigned(FILE* pInput, FILE* pError, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput);
+enum InputState InputDecimal(FILE* pInput, FILE* pError, long double nMin, long double nMax, long double* ret_nInput);
 
 BOOL CheckUnsigned(uintmax_t uNumber, uintmax_t uMin, uintmax_t uMax);
 BOOL CheckSigned(intmax_t iNumber, intmax_t iMin, intmax_t iMax);

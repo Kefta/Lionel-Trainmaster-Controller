@@ -7,9 +7,11 @@
 #include "interface.h"	// SystemHandle
 #include "util.h"		// PrintF, PrintN, INPUT_SUCCESS
 
-inline size_t CommandMenu_PrintList(FILE* pStream, const char* sPrefix, const struct CommandMenu_Option* tOptions, size_t uLength, const char* sSuffix)
+#include "menu.h"
+
+inline size_t CommandMenu_PrintList(FILE* pStream, const char* sPrefix, const char* sSuffix, const struct CommandMenu_Option* tOptions, size_t uLength)
 {
-	const char* const sText;
+	const char* sText;
 	size_t uOptionCount = 0;
 
 	if (*sPrefix != 0)
@@ -36,35 +38,35 @@ inline size_t CommandMenu_PrintList(FILE* pStream, const char* sPrefix, const st
 	return uOptionCount;
 }
 
-enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const struct CommandMenu_Option* tOptions, size_t uLength, const CommandMenu_Phrases tStrings)
+enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const struct CommandMenu_Phrases tStrings, const struct CommandMenu_Option* tOptions, size_t uLength)
 {
 	size_t uOptions;
 	const struct CommandMenu_Option* tOption;
 
 	uintmax_t uInput;
 	intmax_t iInput;
-	uintmax_t uAddress;
+	uintmax_t uAddress = 0; // FIXME: Need to take an address input from the user
 	
 	struct CommandMenu_Menu tMenuStack[TRAIN_MAXMENUS];
 	struct CommandMenu_Menu* pCurMenuPos = tMenuStack;
 
 	CommandMenu_ParseInput_PrintMenu:
-		uOptions = CommandMenu_PrintList(pStream, tStrings.Prefix, tOptions, uLength, tStrings.Suffix);
+		uOptions = CommandMenu_PrintList(pStream, tStrings.MenuPrefix, tStrings.MenuSuffix, tOptions, uLength);
 		
 		CommandMenu_ParseInput_MenuInput:
 			switch (InputUnsigned(pStream, stderr, 1, uOptions, &uInput))
 			{
 				case INPUT_FAIL:
-					PrintF("\nInvalid input, enter an integer [%zu, %zu]: ", 1, uOptions);
+					PrintF(pError, "\nInvalid input, enter an integer [%zu, %zu]: ", 1, uOptions);
 				goto CommandMenu_ParseInput_MenuInput;
 				
 				case INPUT_EOF:
-					Print("\n");
+					Print(pStream, "\n");
 				return INPUT_EOF;
 				
 				case INPUT_SUCCESS:
 					// Move off of the user choice line
-					Print("\n");
+					Print(pStream, "\n");
 					
 					// Iterate though the menu to find the option
 					// We can't index tOptions directly since spacers take up elements
@@ -85,7 +87,9 @@ enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError
 							}
 
 							// Add this menu to the stack so we can return to it
-							*pCurMenuPos++ = {.Menu = tOptions, .Length = uLength};
+							(*pCurMenuPos).Menu = tOptions;
+							(*pCurMenuPos).Length = uLength;
+							++pCurMenuPos;
 
 							// Proceed to the next menu
 							tOptions = tOption->Menu.Menu;
@@ -93,46 +97,46 @@ enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError
 						goto CommandMenu_ParseInput_PrintMenu;
 
 						case MENU_SIMPLE:
-							(tOption->Simple.Function)(hSystem);
+							(tOption->Simple.Function)(hSystem, uAddress);
 						goto CommandMenu_ParseInput_PrintMenu;
 
 						case MENU_UDATA:
-							Print(tStrings.UnsignedData);
+							Print(pStream, tStrings.UnsignedData);
 							
 							CommandMenu_ParseInput_UDataInput:
 								switch (InputUnsigned(pStream, stderr, 0, tOption->UnsignedData.Max, &uInput))
 								{
 									case INPUT_FAIL:
-										PrintF("\nInvalid input, enter an integer [%zu, %zu]: ", 0, tOption->UnsignedData.Max);
+										PrintF(pError, "\nInvalid input, enter an integer [%zu, %zu]: ", 0, tOption->UnsignedData.Max);
 									goto CommandMenu_ParseInput_UDataInput;
 									
 									case INPUT_EOF:
-										Print("\n");
+										Print(pStream, "\n");
 									return INPUT_EOF;
 									
 									case INPUT_SUCCESS:
-										Print("\n\n");
-										(tOption->UnsignedData.Function)(hSystem, (SystemUnsignedData)uInput);
+										Print(pStream, "\n\n");
+										(tOption->UnsignedData.Function)(hSystem, uAddress, (SystemUnsignedData)uInput);
 								}
 						goto CommandMenu_ParseInput_PrintMenu;
 
 						case MENU_IDATA:
-							Print(tStrings.SignedData);
+							Print(pStream, tStrings.SignedData);
 							
 							CommandMenu_ParseInput_IDataInput:
-								switch (InputSigned(pStream, stderr, tOption->UnsignedData.Min, tOption->UnsignedData.Max, &iInput))
+								switch (InputSigned(pStream, stderr, tOption->SignedData.Min, tOption->SignedData.Max, &iInput))
 								{
 									case INPUT_FAIL:
-										PrintF("\nInvalid input, enter an integer [%zd, %zd]: ", tOption->SignedData.Min, tOption->SignedData.Max);
+										PrintF(pError, "\nInvalid input, enter an integer [%zd, %zd]: ", tOption->SignedData.Min, tOption->SignedData.Max);
 									goto CommandMenu_ParseInput_IDataInput;
 									
 									case INPUT_EOF:
-										Print("\n");
+										Print(pStream, "\n");
 									return INPUT_EOF;
 									
 									case INPUT_SUCCESS:
-										Print("\n\n");
-										(tOption->SignedData.Function)(hSystem, (SystemSignedData)iInput);
+										Print(pStream, "\n\n");
+										(tOption->SignedData.Function)(hSystem, uAddress, (SystemSignedData)iInput);
 								}
 						goto CommandMenu_ParseInput_PrintMenu;
 
@@ -154,18 +158,19 @@ enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError
 							}
 
 							// Return to the previous menu on the stack
-							tOptions = (*--pCurMenuPos).Menu;
-							uLength = (*pCurMenu).Length;
+							--pCurMenuPos;
+							tOptions = (*pCurMenuPos).Menu;
+							uLength = (*pCurMenuPos).Length;
 						goto CommandMenu_ParseInput_PrintMenu;
 						
 						case MENU_EXIT:
-							Print("\n");
+							Print(pStream, "\n");
 						return INPUT_SUCCESS;
 							
-						default:
+						default:;
 					}
 				
-				default:
+				default:;
 			}
 	
 	return INPUT_FAIL;

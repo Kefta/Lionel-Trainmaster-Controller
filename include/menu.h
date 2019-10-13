@@ -29,18 +29,18 @@ struct CommandMenu_Menu
 
 struct CommandMenu_Simple
 {
-	void (*Function)(SystemHandle);
+	void (*Function)(SystemHandle, SystemUnsignedData);
 };
 
 struct CommandMenu_UnsignedData
 {
-	void (*Function)(SystemHandle, SystemUnsignedData);
+	void (*Function)(SystemHandle, SystemUnsignedData, SystemUnsignedData);
 	size_t Max;
 };
 
 struct CommandMenu_SignedData
 {
-	void (*Function)(SystemHandle, SystemSignedData);
+	void (*Function)(SystemHandle, SystemUnsignedData, SystemSignedData);
 	size_t Min;
 	size_t Max;
 };
@@ -85,4 +85,4 @@ struct CommandMenu_Phrases
 	const char* SystemCommand;
 };
 
-enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const struct CommandMenu_Option* tOptions, size_t uLength, struct CommandMenu_Phrases tStrings);
+enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const struct CommandMenu_Phrases tStrings, const struct CommandMenu_Option* tOptions, size_t uLength);

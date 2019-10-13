@@ -50,6 +50,11 @@
 #define __TRAIN_COMMANDMENU_MENU(NAME) {NAME, ARRAY_SIZE(NAME)}
 
 // Non inherit commands
+void AccelerateTrain(SystemHandle hSystem, SystemUnsignedData uAddress, SystemUnsignedData uSpeed)
+{
+	Train.ChangeSpeed(hSystem, uAddress, (SystemSignedData)uSpeed);
+}
+
 void DecelerateTrain(SystemHandle hSystem, SystemUnsignedData uAddress, SystemUnsignedData uSpeed)
 {
 	Train.ChangeSpeed(hSystem, uAddress, -(SystemSignedData)uSpeed);
@@ -86,7 +91,7 @@ int main()
 	__TRAIN_COMMANDMENU(Assignment,
 		{"Ring bell", MENU_SIMPLE, {Train.RingBell}},
 		{"Start train", MENU_SIMPLE, {Train.SetMomentumLow}},
-		{"Accelerate train", MENU_UDATA, {Train.ChangeSpeed, (SystemUnsignedData)(Train.RelativeMaxSpeed)}},
+		{"Accelerate train", MENU_UDATA, {AccelerateTrain, (SystemUnsignedData)(Train.RelativeMaxSpeed)}},
 		{"Move train", MENU_SIMPLE, {Train.SetMomentumHigh}},
 		{"Decelerate train", MENU_UDATA, {DecelerateTrain, (SystemUnsignedData)(-Train.RelativeMinSpeed)}},
 		{"Stop train", MENU_SIMPLE, {StopTrain}})
@@ -214,7 +219,7 @@ int main()
 		{"Exit", MENU_EXIT}
 	};
 	
-	switch (CommandMenu_ParseInput(stdout, stdin, stderr, hSystem, StartMenu, ARRAY_SIZE(StartMenu), tPhrases))
+	switch (CommandMenu_ParseInput(stdout, stdin, stderr, hSystem, tPhrases, StartMenu, ARRAY_SIZE(StartMenu)))
 	{
 		case INPUT_SUCCESS:
 			PrintN(stdout, "Exiting gracefully");

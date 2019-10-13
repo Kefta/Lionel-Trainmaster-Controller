@@ -2,8 +2,11 @@
 #define TRAIN_H_INTERFACE
 #pragma once
 
+#include <stdio.h>		// stderr
 #include <stdint.h>		// int8_t, uint8_t, uint16_t
 #include <windows.h>	// HANDLE, INVALID_HANDLE_VALUE
+
+#include "util.h"		// TOSTRING
 
 _Static_assert(sizeof(int8_t) == 1, "int8_t is not 8 bits");
 _Static_assert(sizeof(uint8_t) == 1, "uint8_t is not 8 bits");
@@ -130,7 +133,7 @@ struct ITrain
 	
 	// Speed commands
 	void (*SetSpeed)(SystemHandle hSystem, SystemUnsignedData uAddress, SystemUnsignedData uAbsoluteSpeed);
-	void (*ChangeSpeed)(SystemHandle hSystem, SystemUnsignedData uAddress, SystemUnsignedData uRelativeSpeed);
+	void (*ChangeSpeed)(SystemHandle hSystem, SystemUnsignedData uAddress, SystemSignedData uRelativeSpeed);
 };
 
 struct IAccessory
@@ -184,30 +187,38 @@ struct ISystem
 	//void (*_Reserved2)(SystemHandle hSystem);
 };
 
-#ifdef TRAIN_OUTPUT_ERRORS
-	#define __TRAIN_CHECKUNSIGNED(NUMBER, MIN, MAX, STREAM, ARG, NAME)														\
-		if (CheckUnsigned(NUMBER, MIN, MAX))																				\
-			PrintF(STREAM, "bad argument #%ju to '%s' (unsigned [%ju, %ju] expected, got %ju)", ARG, NAME, MIN, MAX, NUM);
-#else
-	#define __TRAIN_CHECKUNSIGNED(NUMBER, MIN, MAX, STREAM, ARG, NAME) CheckUnsigned(NUMBER, MIN, MAX)
-#endif
+//#ifdef TRAIN_OUTPUT_ERRORS
+	#define __TRAIN_CHECKUNSIGNED(NUM, MIN, MAX, STREAM, ARG, NAME)															\
+		if (!CheckUnsigned(NUM, MIN, MAX))																					\
+		{																													\
+			PrintF(STREAM, "bad argument #%ju to '%s' (unsigned [%ju, %ju] expected, got %ju)", ARG, NAME, MIN, MAX, NUM);	\
+		}
+/*#else
+	#define __TRAIN_CHECKUNSIGNED(NUM, MIN, MAX, STREAM, ARG, NAME)	\
+		if (!CheckUnsigned(NUM, MIN, MAX))							\
+			return;
+#endif*/
 
-#ifdef TRAIN_OUTPUT_ERRORS
-	#define __TRAIN_CHECKSIGNED(NUMBER, MIN, MAX, STREAM, ARG, NAME)														\
-		if (CheckSigned(NUMBER, MIN, MAX))																					\
-			PrintF(STREAM, "bad argument #%jd to '%s' (unsigned [%jd, %jd] expected, got %jd)", ARG, NAME, MIN, MAX, NUM);
-#else
-	#define __TRAIN_CHECKSIGNED(NUMBER, MIN, MAX, STREAM, ARG, NAME) CheckSigned(NUMBER, MIN, MAX)
-#endif
+//#ifdef TRAIN_OUTPUT_ERRORS
+	#define __TRAIN_CHECKSIGNED(NUM, MIN, MAX, STREAM, ARG, NAME)															\
+		if (!CheckSigned(NUM, MIN, MAX))																					\
+		{																													\
+			PrintF(STREAM, "bad argument #%jd to '%s' (unsigned [%jd, %jd] expected, got %jd)", ARG, NAME, MIN, MAX, NUM);	\
+		}
+/*#else
+	#define __TRAIN_CHECKSIGNED(NUM, MIN, MAX, STREAM, ARG, NAME)	\
+		if (!CheckSigned(NUM, MIN, MAX))							\
+			return;
+#endif*/
 
-#define __TRAIN_SENDCOMMAND(NAME, MaxAddress, MaxCommand, TYPEID)										\
+// FIXME: HACK to avoid implicit declration, need to do some restructuring
+void System_SendCommand(SystemHandle hSystem, SystemCommand uCommand);
+
+#define __TRAIN_SENDCOMMAND(NAME, MAXADDRESS, MAXCOMMAND, TYPEID)										\
 	inline void NAME(SystemHandle hSystem, SystemUnsignedData uAddress, SystemUnsignedData uCommand)	\
 	{																									\
-		if (!__TRAIN_CHECKUNSIGNED(uAddress, 0, MaxAddress, stderr, 2, TOSTRING(NAME)))					\
-			return;																						\
-																										\
-		if (!__TRAIN_CHECKUNSIGNED(uCommand, 0, MaxCommand, stderr, 3, TOSTRING(NAME)))					\
-			return;																						\
+		__TRAIN_CHECKUNSIGNED(uAddress, 0, MAXADDRESS, stderr, 2, TOSTRING(NAME))						\
+		__TRAIN_CHECKUNSIGNED(uCommand, 0, MAXCOMMAND, stderr, 3, TOSTRING(NAME))						\
 																										\
 		SystemCommand uSystemCommand = (SystemCommand)uCommand;											\
 		uSystemCommand |= ((SystemCommand)uAddress << 7);												\
@@ -216,41 +227,32 @@ struct ISystem
 		System_SendCommand(hSystem, uSystemCommand);													\
 	}
 
-// Macro builder: must provide args NAME, COMMAND
-#define __TRAIN_DATA(_SENDCOMMAND, _MAXADDRESS)											\
+#define __TRAIN_DATA(NAME, COMMAND, SENDCOMMAND, MAXADDRESS)							\
 	inline void NAME(SystemHandle hSystem, SystemUnsignedData uAddress)					\
 	{																					\
-		if (!__TRAIN_CHECKUNSIGNED(uAddress, _MAXADDRESS, stderr, 2, TOSTRING(NAME)))	\
-			return;																		\
+		__TRAIN_CHECKUNSIGNED(uAddress, 0, MAXADDRESS, stderr, 2, TOSTRING(NAME))		\
 																						\
-		_SENDCOMMAND(hSystem, uAddress, COMMAND);										\
+		SENDCOMMAND(hSystem, uAddress, COMMAND);										\
 	}
 
-// Macro builder: must provide args NAME, COMMAND, MAX
-#define __TRAIN_UDATA(_SENDCOMMAND, _MAXADDRESS)													\
+#define __TRAIN_UDATA(NAME, COMMAND, MAX, SENDCOMMAND, MAXADDRESS)									\
 	inline void NAME(SystemHandle hSystem, SystemUnsignedData uAddress, SystemUnsignedData uData)	\
 	{																								\
-		if (!__TRAIN_CHECKUNSIGNED(uAddress, 0, _MAXADDRESS, stderr, 2, TOSTRING(NAME)))			\
-			return;																					\
+		__TRAIN_CHECKUNSIGNED(uAddress, 0, MAXADDRESS, stderr, 2, TOSTRING(NAME))					\
+		__TRAIN_CHECKUNSIGNED(uData, 0, MAX, stderr, 3, TOSTRING(NAME))								\
 																									\
-		if (!__TRAIN_CHECKUNSIGNED(uData, 0, MAX, stderr, 3, TOSTRING(NAME)))						\
-			return;																					\
-																									\
-		_SENDCOMMAND(hSystem, uAddress, uData | COMMAND);											\
+		SENDCOMMAND(hSystem, uAddress, uData | COMMAND);											\
 	}
 
 // Macro builder: must provide args NAME, COMMAND, MIN, MAX
-#define __TRAIN_IDATA(_SENDCOMMAND, _MAXADDRESS)													\
-	inline void NAME(SystemHandle hSystem, SystemUnsignedData uAddress, SystemUnsignedData iData)	\
-	{																								\
-		if (!__TRAIN_CHECKUNSIGNED(uAddress, _MAXADDRESS, stderr, 2, TOSTRING(NAME)))				\
-			return;																					\
-																									\
-		if (!__TRAIN_CHECKSIGNED(iData, MIN, MAX, stderr, 3, TOSTRING(NAME)))						\
-			return;																					\
-																									\
-		/* Reinterpret iData's bits as unsigned	*/													\
-		_SENDCOMMAND(hSystem, uAddress, *((SomeUnsignedData*)&iData) | COMMAND);					\
+#define __TRAIN_IDATA(NAME, COMMAND, MIN, MAX, SENDCOMMAND, MAXADDRESS)							\
+	inline void NAME(SystemHandle hSystem, SystemUnsignedData uAddress, SystemSignedData iData)	\
+	{																							\
+		__TRAIN_CHECKUNSIGNED(uAddress, 0, MAXADDRESS, stderr, 2, TOSTRING(NAME))				\
+		__TRAIN_CHECKSIGNED(iData, MIN, MAX, stderr, 3, TOSTRING(NAME))							\
+																								\
+		/* Reinterpret iData's bits as unsigned	*/												\
+		SENDCOMMAND(hSystem, uAddress, *((SystemUnsignedData*)(&iData)) | COMMAND);				\
 	}
 
 #endif

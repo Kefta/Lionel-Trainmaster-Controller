@@ -2,9 +2,11 @@
 #include "interface.h"	// SystemCommand, SystemHandle, SystemUnsignedData
 #include "util.h"		// Print, PrintBinary
 
+#include "system.h"
+
 inline SystemHandle System_Create(const char* sFile)
 {
-	return CreateFile(TRAIN_FILE, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	return CreateFile(sFile, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
 inline void System_Close(SystemHandle hSystem)
@@ -18,28 +20,28 @@ void System_SendCommand(SystemHandle hSystem, SystemCommand uCommand)
 		0x7F /*01111111*/,
 		(SystemUnsignedData)(uCommand >> 8), // 8 MSB
 		(SystemUnsignedData)uCommand // 8 LSB
-	}
+	};
 	
 	DWORD uBytesWritten = 0;
 	
-	if (WriteFile(hSystem, (LPCVOID)tCommand, 3, uBytesWritten, NULL))
+	if (WriteFile(hSystem, (LPCVOID)tCommand, 3, &uBytesWritten, NULL))
 	{
 		#ifdef TRAIN_OUTPUT_COMMANDS
-			Print("Command written:");
+			Print(stdout, "Command written:");
 			
 			while (uBytesWritten-- != 0)
 			{
-				Print(" ");
+				Print(stdout, " ");
 				PrintBinary(stdout, (BYTE*)pCommand++, sizeof(SystemUnsignedData));
 			}
 			
-			PrintN("");
+			PrintN(stdout, "");
 		#endif
 	}
 	else
 	{
 		#ifdef TRAIN_OUTPUT_ERRORS
-			Print("Failed to write command\n");
+			Print(stderr, "Failed to write command\n");
 		#endif
 	}
 }
