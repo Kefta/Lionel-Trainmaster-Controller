@@ -52,35 +52,26 @@ inline void PrintBinary(FILE* pStream, const BYTE* Object, size_t uLength)
 	}
 }
 
-enum InputState InputEnter(FILE* pStream)
-{
-	int iEnter;
-
-	while ((iEnter = getc(pStream)) != '\r' && iEnter != '\n')
-	{
-		if (iEnter == EOF)
-			return INPUT_EOF;
-	}
-	
-	return INPUT_SUCCESS;
-}
+#define TRAIN_INPUT_ISDONE(x) (x == EOF || x == '\n' || x == '\r' || x == '\0')
+#define __TRAIN_UTIL_INPUT_ERROR(FORMAT) "\nInvalid input, enter a number [FORMAT, FORMAT]: "
 
 // FIXME: Change error stream arg to an error callback func
-enum InputState InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput)
-{
-	int iCurChar = getc(pInput);
-	
-	if (iCurChar == EOF)
-		return INPUT_EOF;
-	
-	static const char* InputError = "\nInvalid input, enter a number [%zu, %zu]: ";
-	
+enum InputState InputUnsigned(FILE* pInput, uintmax_t uMin, uintmax_t uMax, uintmax_t* ret_uInput)
+{	
 	uintmax_t uOption = 0;
-	size_t uCurPower;
-	BOOL bStarted = FALSE;
+	size_t uCurPower = 1;
 	
-	do
+	BOOL bStarted = FALSE;
+	BOOL bClearing = FALSE;
+	BOOL bFail = FALSE;
+	
+	int iCurChar;
+	
+	while ((iCurChar = getc(pInput)) != EOF)
 	{
+		if (bClearing)
+			continue;
+		
 		switch(iCurChar)
 		{
 			case '0':
@@ -98,7 +89,7 @@ enum InputState InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintma
 				uOption *= uCurPower; // Promote the last number to the next power
 				uOption += iCurChar - '0'; // Add the next character to the ones place
 				
-				// If the option is already out of bounds, don't bother reading the rest of the string
+				// If the option is already out of bounds, don't bother parsing the rest of the string
 				if (uOption <= uMax)
 				{
 					uCurPower *= 10;
@@ -106,59 +97,62 @@ enum InputState InputUnsigned(FILE* pInput, FILE* pError, uintmax_t uMin, uintma
 					break;
 				}
 			
-			DEFAULT_INPUTUNSIGNED:
 			default:
-				PrintF(pError, InputError, uMin, uMax);
-				
-				return INPUT_FAIL;
+				bClearing = TRUE;
+				bFail = TRUE;
+			goto INPUTUNSIGNED_FINISHED;
+			
+			case '\n':
+				if (bStarted || bClearing)
+					goto INPUTUNSIGNED_FINISHED;
+			break;
 			
 			case '\0':
-			case '\n':
 			case '\r':
 			case '\t':
 			case ' ':
 				if (bStarted)
-					break;
-			
-			goto DEFAULT_INPUTUNSIGNED;
+				{
+					bClearing = TRUE;
+				}
 		}
 	}
-	while ((iCurChar = getc(pInput)) != EOF);
 	
-	if (uOption < uMin)
-	{
-		PrintF(pError, InputError, uMin, uMax);
+	INPUTUNSIGNED_FINISHED:
+		if (!bStarted)
+			return INPUT_EOF;
 		
-		return INPUT_FAIL;
-	}
-	
-	if (ret_uInput != NULL)
-		*ret_uInput = uOption;
-	
-	return INPUT_SUCCESS;
+		if (bFail || uOption < uMin)
+			return INPUT_FAIL;
+		
+		if (ret_uInput != NULL)
+			*ret_uInput = uOption;
+		
+		return INPUT_SUCCESS;
 }
 
-enum InputState InputSigned(FILE* pInput, FILE* pError, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput)
-{
-	int iCurChar = getc(pInput);
-	
-	if (iCurChar == EOF)
-		return INPUT_EOF;
-	
-	static const char* InputError = "\nInvalid input, enter a number [%zd, %zd]: ";
-	
+enum InputState InputSigned(FILE* pInput, intmax_t iMin, intmax_t iMax, intmax_t* ret_iInput)
+{	
 	intmax_t iOption = 0;
-	size_t uCurPower;
+	size_t uCurPower = 1;
 	BOOL bNegative = FALSE;
-	BOOL bStarted = FALSE;
 	
-	do
+	BOOL bStarted = FALSE;
+	BOOL bClearing = FALSE;
+	BOOL bFail = FALSE;
+	
+	int iCurChar;
+	
+	while ((iCurChar = getc(pInput)) != EOF)
 	{
+		if (bClearing)
+			continue;
+		
 		switch(iCurChar)
 		{
 			case '-':
 				if (bStarted)
-					goto DEFAULT_INPUTSIGNED;
+					goto INPUTSIGNED_DEFAULT;
 			
 				bNegative = TRUE;
 			break;
@@ -198,73 +192,36 @@ enum InputState InputSigned(FILE* pInput, FILE* pError, intmax_t iMin, intmax_t 
 					break;
 				}
 			
-			DEFAULT_INPUTSIGNED:
+			INPUTSIGNED_DEFAULT:
 			default:
-				PrintF(pError, InputError, iMin, iMax);
-				
-				return INPUT_FAIL;
+				bFail = TRUE;
+			goto INPUTSIGNED_FINISHED;
+			
+			case '\n':
+				if (bStarted || bClearing)
+					goto INPUTSIGNED_FINISHED;
+			break;
 			
 			case '\0':
-			case '\n':
 			case '\r':
 			case '\t':
 			case ' ':
 				if (bStarted)
-					break;
-			
-			goto DEFAULT_INPUTSIGNED;
+				{
+					bClearing = TRUE;
+				}
 		}
 	}
-	while ((iCurChar = getc(pInput)) != EOF);
 	
-	if (bNegative)
-	{
-		if (iOption > iMax)
-		{
-			PrintF(pError, InputError, iMin, iMax);
-			
-			return INPUT_FAIL;
-		}
-	}
-	else if (iOption < iMin)
-	{
-		PrintF(pError, InputError, iMin, iMax);
+	INPUTSIGNED_FINISHED:
+		if (!bStarted)
+			return INPUT_EOF;
 		
-		return INPUT_FAIL;
-	}
-	
-	if (ret_iInput != NULL)
-		*ret_iInput = iOption;
-	
-	return INPUT_SUCCESS;
-}
-
-enum InputState InputDecimal(FILE* pInput, FILE* pError, long double nMin, long double nMax, long double* ret_nInput)
-{
-	// FIXME
-	return INPUT_FAIL;
-}
-
-inline BOOL CheckUnsigned(uintmax_t uNumber, uintmax_t uMin, uintmax_t uMax)
-{
-	if (uNumber <= uMax)
-		return TRUE;
-
-	return FALSE;
-}
-
-inline BOOL CheckSigned(intmax_t iNumber, intmax_t iMin, intmax_t iMax)
-{
-	if (iNumber >= iMin && iNumber <= iMax)
-		return TRUE;
-
-	return FALSE;
-}
-
-inline BOOL CheckDecimal(long double nNumber, long double nMin, long double nMax)
-{
-	if (nNumber >= nMin && nNumber <= nMax)
-		return TRUE;
-
-	return FALSE;
+		if (bFail || (bNegative && iOption > iMax) || (!bNegative && iOption < iMin))
+			return INPUT_FAIL;
+		
+		if (ret_iInput != NULL)
+			*ret_iInput = iOption;
+		
+		return INPUT_SUCCESS;
 }

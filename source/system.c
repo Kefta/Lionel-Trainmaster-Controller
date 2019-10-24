@@ -1,4 +1,5 @@
 #include <windows.h>	// BYTE, CloseHandle, CreateFile, DWORD, FILE_ATTRIBUTE_NORMAL, GENERIC_WRITE, LPCVOID, OPEN_EXISTING, WriteFile
+#include "config.h"		// TRAIN_OUTPUT_COMMANDS, TRAIN_OUTPUT_ERRORS
 #include "interface.h"	// SystemCommand, SystemHandle, SystemUnsignedData
 #include "util.h"		// Print, PrintBinary
 
@@ -17,7 +18,7 @@ inline void System_Close(SystemHandle hSystem)
 void System_SendCommand(SystemHandle hSystem, SystemCommand uCommand)
 {
 	const SystemUnsignedData tCommand[3] = {
-		0x7F /*01111111*/,
+		0xFE /*11111110*/,
 		(SystemUnsignedData)(uCommand >> 8), // 8 MSB
 		(SystemUnsignedData)uCommand // 8 LSB
 	};
@@ -25,9 +26,11 @@ void System_SendCommand(SystemHandle hSystem, SystemCommand uCommand)
 	DWORD uBytesWritten = 0;
 	
 	if (WriteFile(hSystem, (LPCVOID)tCommand, 3, &uBytesWritten, NULL))
-	{
+	{	
 		#ifdef TRAIN_OUTPUT_COMMANDS
 			Print(stdout, "Command written:");
+			
+			const SystemUnsignedData* pCommand = tCommand;
 			
 			while (uBytesWritten-- != 0)
 			{
@@ -35,7 +38,7 @@ void System_SendCommand(SystemHandle hSystem, SystemCommand uCommand)
 				PrintBinary(stdout, (BYTE*)pCommand++, sizeof(SystemUnsignedData));
 			}
 			
-			PrintN(stdout, "");
+			Print(stdout, "\n\n");
 		#endif
 	}
 	else

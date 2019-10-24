@@ -3,10 +3,22 @@
 #include <windows.h>	// BOOL
 
 #include "interface.h"	// SystemHandle
+#include "util.h"		// ARRAY_SIZE
 
-#define TRAIN_MAXMENUS 10 // FIXME
+#define TRAIN_MENU_MAX 10 // FIXME
 
-enum CommandMenu_OptionType
+#define TRAIN_MENU_MENU(NAME, MENU) {NAME, MENU_MENU, .Menu = {.Menu = MENU, .Length = ARRAY_SIZE(MENU)}}
+#define TRAIN_MENU_SIMPLE(NAME, FUNC) {NAME, MENU_SIMPLE, .Simple = {.Function = FUNC}}
+#define TRAIN_MENU_ADDRESS(NAME, FUNC) {NAME, MENU_ADDRESS, .Address = {.Function = FUNC}}
+#define TRAIN_MENU_UDATA(NAME, FUNC, MIN, MAX) {NAME, MENU_UDATA, .UnsignedData = {.Function = FUNC, .Min = MIN, .Max = MAX}}
+#define TRAIN_MENU_IDATA(NAME, FUNC, MIN, MAX) {NAME, MENU_IDATA, .SignedData = {.Function = FUNC, .Min = MIN, .Max = MAX}}
+#define TRAIN_MENU_COMMAND(NAME, FUNC, MAX) {NAME, MENU_COMMAND, .Command = {.Function = FUNC, .Max = MAX}}
+#define TRAIN_MENU_SYSCOMMAND(NAME, FUNC, MAX) {NAME, MENU_SYSCOMMAND, .SystemCommand = {.Function = FUNC, .Max = MAX}}
+#define TRAIN_MENU_RETURN(NAME) {NAME, MENU_RETURN}
+#define TRAIN_MENU_EXIT(NAME) {NAME, MENU_EXIT}
+#define TRAIN_MENU_SEPARATOR {NULL}
+
+enum Menu_OptionType
 {
 	MENU_MENU,			// Redirects to another menu, no command
 	MENU_SIMPLE,		// No args
@@ -20,68 +32,70 @@ enum CommandMenu_OptionType
 	MENU_EXIT			// Exit the program
 };
 
-struct CommandMenu_Option;
+struct Menu_Option;
 
-struct CommandMenu_Menu
+struct Menu_Menu
 {
-	const struct CommandMenu_Option* Menu;
+	const struct Menu_Option* Menu; // Essentially a linked list of menu redirections
 	size_t Length;
 };
 
-struct CommandMenu_Simple
+struct Menu_Simple
 {
 	void (*Function)(SystemHandle);
 };
 
-struct CommandMenu_Address
+struct Menu_Address
 {
 	void (*Function)(SystemHandle, SystemUnsignedData);
 };
 
-struct CommandMenu_UnsignedData
+struct Menu_UnsignedData
 {
 	void (*Function)(SystemHandle, SystemUnsignedData, SystemUnsignedData);
-	size_t Max;
+	uintmax_t Min;
+	uintmax_t Max;
 };
 
-struct CommandMenu_SignedData
+struct Menu_SignedData
 {
 	void (*Function)(SystemHandle, SystemUnsignedData, SystemSignedData);
-	size_t Min;
-	size_t Max;
+	intmax_t Min;
+	intmax_t Max;
 };
 
-struct CommandMenu_Command
+struct Menu_Command
 {
 	void (*Function)(SystemHandle, SystemUnsignedData, SystemUnsignedData);
-	size_t Max;
+	uintmax_t Max;
 };
 
-struct CommandMenu_SystemCommand
+struct Menu_SystemCommand
 {
 	void (*Function)(SystemHandle, SystemCommand);
+	uintmax_t Max;
 };
 
-struct CommandMenu_Option
+struct Menu_Option
 {
 	const char* const Text;	// NULL = spacer
-	const enum CommandMenu_OptionType Type;
+	const enum Menu_OptionType Type;
 	
 	union
 	{
-		const struct CommandMenu_Menu Menu;
-		const struct CommandMenu_Simple Simple;
-		const struct CommandMenu_Address Address;
-		const struct CommandMenu_UnsignedData UnsignedData;
-		const struct CommandMenu_SignedData SignedData;
-		const struct CommandMenu_Command Command;
-		const struct CommandMenu_SystemCommand SystemCommand;
+		const struct Menu_Menu Menu;
+		const struct Menu_Simple Simple;
+		const struct Menu_Address Address;
+		const struct Menu_UnsignedData UnsignedData;
+		const struct Menu_SignedData SignedData;
+		const struct Menu_Command Command;
+		const struct Menu_SystemCommand SystemCommand;
 	};
 };
 
-size_t CommandMenu_PrintList(FILE* pStream, const char* sPrefix, const char* sSuffix, const struct CommandMenu_Option* tOptions, size_t uLength);
+size_t Menu_PrintList(FILE* pStream, const char* sPrefix, const char* sSuffix, const struct Menu_Option* tOptions, size_t uLength);
 
-struct CommandMenu_Phrases
+struct Menu_Phrases
 {
 	const char* MenuPrefix;
 	const char* MenuSuffix;
@@ -92,4 +106,4 @@ struct CommandMenu_Phrases
 	const char* SystemCommand;
 };
 
-enum InputState CommandMenu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const struct CommandMenu_Phrases tStrings, const struct CommandMenu_Option* tOptions, size_t uLength);
+enum InputState Menu_ParseInput(FILE* pStream, FILE* pInput, FILE* pError, SystemHandle hSystem, const struct Menu_Phrases tStrings, const struct Menu_Option* tOptions, size_t uLength);
