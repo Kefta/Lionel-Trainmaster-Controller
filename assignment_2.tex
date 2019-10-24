@@ -50,9 +50,16 @@
 		train, \textbf{decelerate} the train, and \textbf{stop} the train.
 
   \section{Procedure}
-	  One of the main features that is unique with our program is the use of macros. This is due to being limited to
-	  C, which places restrictions on how constants can be used. The program works by taking user input, then sending messages
-	  over UART to the train system. The program is basically a relay system between the user and the train. It take in a command 
-	  from the user and sends the corresponding UART message to the train. The main difference between this program and general purpose programs is that this one controls hardware. That makes this an embedded systems program that's suited for a very specific use. And the hardware itself had to be taken into account since this program controlled much of the moving parts of the hardware.
+	  One of the main features that is unique with our program is the use of macros. This is due our choice of programming language,
+	  which is C, which places restrictions on how constants can be used. The program was worked on while we met up in the lab
+	  several times, where we experimented a bit with the train hardware and remote control themselves. Once we had an idea of how
+	  the train actually operated in practice, we were able to get an idea of how our program was supposed to interface with the 
+	  train, and to easily see what went wrong after compiling the program. Such as certain parts of the train, like the horn, not
+	  registering the correct inputs, which we were able to correct. The program works by taking user input, then sending
+	  messages over UART to the train system. The program is basically a relay system between the user and the train. It take in a
+	  command from the user and sends the corresponding UART message to the train. The main difference between this program and
+	  general purpose programs is that this one controls hardware. That makes this an embedded systems program that's suited for a
+	  very specific use. And the hardware itself had to be taken into account since this program controlled many of the moving parts
+	  of the hardware.
 
 \end{document}
